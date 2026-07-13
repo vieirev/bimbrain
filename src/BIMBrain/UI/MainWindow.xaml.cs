@@ -1,5 +1,7 @@
+using Autodesk.Revit.DB;
 using System.Windows;
 using System.Windows.Controls;
+using Grid = System.Windows.Controls.Grid;
 
 namespace BIMBrain.UI
 {
@@ -7,9 +9,11 @@ namespace BIMBrain.UI
     {
         private TextBox _questionBox;
         private TextBlock _responseText;
+        private Document _doc;
 
-        public MainWindow(string projectName)
+        public MainWindow(string projectName, Document doc)
         {
+            _doc = doc;
             Title = "BIMBrain";
             Width = 450;
             Height = 350;
@@ -115,15 +119,28 @@ namespace BIMBrain.UI
 
         private void OnConsultarClick(object sender, RoutedEventArgs e)
         {
-            var question = _questionBox.Text.Trim();
+            var question = _questionBox.Text.Trim().ToLowerInvariant();
 
             if (string.IsNullOrEmpty(question))
             {
                 _responseText.Text = "Digite uma pergunta.";
+                return;
+            }
+
+            if (question == "quantas tomadas existem"
+                || question == "quantas tomadas existem?"
+                || question.StartsWith("quantas tomadas existem"))
+            {
+                var collector = new FilteredElementCollector(_doc)
+                    .OfCategory(BuiltInCategory.OST_ElectricalFixtures)
+                    .OfClass(typeof(FamilyInstance));
+
+                var count = collector.ToElements().Count;
+                _responseText.Text = $"Foram encontradas {count} tomadas.";
             }
             else
             {
-                _responseText.Text = "Pergunta recebida.";
+                _responseText.Text = "Pergunta ainda não suportada pelo BIMBrain.";
             }
         }
     }
