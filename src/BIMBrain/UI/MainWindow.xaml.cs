@@ -5,24 +5,20 @@ namespace BIMBrain.UI
 {
     public class MainWindow : Window
     {
-        public MainWindow(
-            string projectName,
-            int totalElements,
-            int totalViews,
-            int totalLevels)
+        private TextBox _questionBox;
+        private TextBlock _responseText;
+
+        public MainWindow(string projectName)
         {
             Title = "BIMBrain";
-            Width = 400;
-            Height = 300;
+            Width = 450;
+            Height = 350;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
             var grid = new Grid();
             grid.Margin = new Thickness(20);
-            grid.RowDefinitions.Add(new RowDefinition());
-            grid.RowDefinitions.Add(new RowDefinition());
-            grid.RowDefinitions.Add(new RowDefinition());
-            grid.RowDefinitions.Add(new RowDefinition());
-            grid.RowDefinitions.Add(new RowDefinition());
+            for (int i = 0; i < 7; i++)
+                grid.RowDefinitions.Add(new RowDefinition());
 
             var title = new TextBlock
             {
@@ -49,36 +45,86 @@ namespace BIMBrain.UI
             };
             Grid.SetRow(valProject, 2);
 
-            var lblElements = new TextBlock
+            var separator = new Separator { Margin = new Thickness(0, 10, 0, 10) };
+            Grid.SetRow(separator, 3);
+
+            var lblQuestion = new TextBlock
             {
-                Text = "Elementos: " + totalElements,
+                Text = "Faça uma pergunta:",
+                FontWeight = FontWeights.SemiBold
+            };
+            Grid.SetRow(lblQuestion, 4);
+
+            var inputPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                Margin = new Thickness(0, 5, 0, 0)
+            };
+
+            _questionBox = new TextBox
+            {
+                Width = 280,
+                Height = 25
+            };
+
+            var consultarBtn = new Button
+            {
+                Content = "Consultar",
+                Width = 80,
+                Height = 25,
+                Margin = new Thickness(10, 0, 0, 0)
+            };
+            consultarBtn.Click += OnConsultarClick;
+
+            inputPanel.Children.Add(_questionBox);
+            inputPanel.Children.Add(consultarBtn);
+            Grid.SetRow(inputPanel, 5);
+
+            var responsePanel = new StackPanel
+            {
                 Margin = new Thickness(0, 10, 0, 0)
             };
-            Grid.SetRow(lblElements, 3);
 
-            var stack = new StackPanel
+            var lblResponse = new TextBlock
             {
-                Margin = new Thickness(0, 10, 0, 0),
-                Orientation = Orientation.Horizontal
+                Text = "Resposta:",
+                FontWeight = FontWeights.SemiBold
             };
-            stack.Children.Add(new TextBlock
+
+            _responseText = new TextBlock
             {
-                Text = "Vistas: " + totalViews,
-                Margin = new Thickness(0, 0, 20, 0)
-            });
-            stack.Children.Add(new TextBlock
-            {
-                Text = "Níveis: " + totalLevels
-            });
-            Grid.SetRow(stack, 4);
+                Text = "Aguardando consulta...",
+                Margin = new Thickness(10, 5, 0, 0),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            responsePanel.Children.Add(lblResponse);
+            responsePanel.Children.Add(_responseText);
+            Grid.SetRow(responsePanel, 6);
 
             grid.Children.Add(title);
             grid.Children.Add(lblProject);
             grid.Children.Add(valProject);
-            grid.Children.Add(lblElements);
-            grid.Children.Add(stack);
+            grid.Children.Add(separator);
+            grid.Children.Add(lblQuestion);
+            grid.Children.Add(inputPanel);
+            grid.Children.Add(responsePanel);
 
             Content = grid;
+        }
+
+        private void OnConsultarClick(object sender, RoutedEventArgs e)
+        {
+            var question = _questionBox.Text.Trim();
+
+            if (string.IsNullOrEmpty(question))
+            {
+                _responseText.Text = "Digite uma pergunta.";
+            }
+            else
+            {
+                _responseText.Text = "Pergunta recebida.";
+            }
         }
     }
 }

@@ -22,11 +22,7 @@ namespace BIMBrain
             var totalLevels = new FilteredElementCollector(doc)
                 .OfClass(typeof(Level)).ToElements().Count;
 
-            var window = new UI.MainWindow(
-                projectName,
-                totalElements,
-                totalViews,
-                totalLevels);
+            var window = new UI.MainWindow(projectName);
 
             window.Show();
 
