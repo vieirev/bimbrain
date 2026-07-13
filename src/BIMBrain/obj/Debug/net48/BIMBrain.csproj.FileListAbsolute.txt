@@ -1,0 +1,8 @@
+D:\bimbrain\bimbrain\src\BIMBrain\obj\Debug\net48\BIMBrain.csproj.AssemblyReference.cache
+D:\bimbrain\bimbrain\src\BIMBrain\bin\Debug\net48\BIMBrain.dll
+D:\bimbrain\bimbrain\src\BIMBrain\bin\Debug\net48\BIMBrain.pdb
+D:\bimbrain\bimbrain\src\BIMBrain\obj\Debug\net48\BIMBrain.GeneratedMSBuildEditorConfig.editorconfig
+D:\bimbrain\bimbrain\src\BIMBrain\obj\Debug\net48\BIMBrain.csproj.CoreCompileInputs.cache
+D:\bimbrain\bimbrain\src\BIMBrain\obj\Debug\net48\BIMBrain.sourcelink.json
+D:\bimbrain\bimbrain\src\BIMBrain\obj\Debug\net48\BIMBrain.dll
+D:\bimbrain\bimbrain\src\BIMBrain\obj\Debug\net48\BIMBrain.pdb

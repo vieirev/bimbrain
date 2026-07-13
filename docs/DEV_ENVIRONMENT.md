@@ -16,8 +16,8 @@
 ## Revit
 
 - Revit 2024 instalado em `C:\Program Files\Autodesk\Revit 2024`
-- Revit 2025 **não instalado**
-- Revit SDK **não instalado**
+- Revit 2025 instalado em `D:\ProgramData\Autodesk\Revit 2025`
+- Revit 2025.3 SDK instalado
 
 ## Addins
 
@@ -30,7 +30,6 @@
 
 ## Observações
 
-- Revit 2024 atende ao requisito mínimo (README aceita Revit 2024 ou 2025)
-- SDK do Revit não está instalado, mas RevitAPI.dll está disponível em `C:\Program Files\Autodesk\Revit 2024`
-- Pasta de Addins 2025 já existe, mesmo sem o Revit 2025 instalado
+- Revit 2024 e 2025 atendem ao requisito do README
+- Revit 2025.3 SDK registrado no sistema
 - `dotnet` CLI funcionando normalmente

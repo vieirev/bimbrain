@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RevitAddIns>
+  <AddIn Type="Application">
+    <Name>BIMBrain</Name>
+    <Assembly>BIMBrain.dll</Assembly>
+    <AddInId>d5a3f1e2-7b8c-4f0d-9a1e-6c3b8d2f7e0a</AddInId>
+    <FullClassName>BIMBrain.App</FullClassName>
+    <VendorId>BIMBrain</VendorId>
+  </AddIn>
+</RevitAddIns>
