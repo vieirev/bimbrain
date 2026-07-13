@@ -1,5 +1,7 @@
 # BIMBrain
 
+**Status:** em desenvolvimento inicial (pré-alpha). Nenhuma versão estável disponível ainda.
+
 Plataforma de Inteligência Artificial para escritórios BIM.
 
 ## MVP

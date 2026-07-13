@@ -1,4 +1,6 @@
 using Autodesk.Revit.DB;
+using System;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Grid = System.Windows.Controls.Grid;
@@ -131,17 +133,63 @@ namespace BIMBrain.UI
                 || question == "quantas tomadas existem?"
                 || question.StartsWith("quantas tomadas existem"))
             {
-                var collector = new FilteredElementCollector(_doc)
-                    .OfCategory(BuiltInCategory.OST_ElectricalFixtures)
-                    .OfClass(typeof(FamilyInstance));
-
-                var count = collector.ToElements().Count;
+                var count = CountByCategory(BuiltInCategory.OST_ElectricalFixtures);
                 _responseText.Text = $"Foram encontradas {count} tomadas.";
+            }
+            else if (question == "quantos interruptores existem"
+                || question == "quantos interruptores existem?"
+                || question.StartsWith("quantos interruptores existem"))
+            {
+                var count = CountByCategory(BuiltInCategory.OST_LightingDevices);
+                _responseText.Text = $"Foram encontrados {count} interruptores.";
+            }
+            else if (question == "quantas luminárias existem"
+                || question == "quantas luminarias existem"
+                || question == "quantas luminárias existem?"
+                || question == "quantas luminarias existem?"
+                || question.StartsWith("quantas luminárias")
+                || question.StartsWith("quantas luminarias"))
+            {
+                var count = CountByCategory(BuiltInCategory.OST_LightingFixtures);
+                _responseText.Text = $"Foram encontradas {count} luminárias.";
+            }
+            else if (question == "quantos quadros existem"
+                || question == "quantos quadros existem?"
+                || question.StartsWith("quantos quadros existem"))
+            {
+                var count = CountByCategory(BuiltInCategory.OST_ElectricalEquipment);
+                _responseText.Text = $"Foram encontrados {count} quadros.";
+            }
+            else if (question == "quantos níveis existem"
+                || question == "quantos níveis existem?"
+                || question == "quantos niveis existem"
+                || question == "quantos niveis existem?"
+                || question.StartsWith("quantos níveis")
+                || question.StartsWith("quantos niveis"))
+            {
+                var count = new FilteredElementCollector(_doc)
+                    .OfClass(typeof(Level)).ToElements().Count;
+                _responseText.Text = $"Foram encontrados {count} níveis.";
             }
             else
             {
                 _responseText.Text = "Pergunta ainda não suportada pelo BIMBrain.";
             }
+        }
+
+        private int CountByCategory(BuiltInCategory category, string familyNameFilter = null)
+        {
+            var collector = new FilteredElementCollector(_doc)
+                .OfCategory(category)
+                .OfClass(typeof(FamilyInstance));
+
+            if (familyNameFilter == null)
+                return collector.ToElements().Count;
+
+            return collector
+                .ToElements()
+                .OfType<FamilyInstance>()
+                .Count(fi => fi.Symbol.Family.Name.IndexOf(familyNameFilter, StringComparison.OrdinalIgnoreCase) >= 0);
         }
     }
 }

@@ -1,0 +1,23 @@
+## .NET / Visual Studio
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userprefs
+*.DotSettings.user
+
+## Secrets / Local config
+appsettings.local.json
+secrets.json
+*.secrets.*
+
+## Build output
+*.dll
+*.exe
+*.pdb
+*.nupkg
+
+## IDE
+*.swp
+*.sln.docstates

@@ -16,11 +16,6 @@ namespace BIMBrain
             var doc = uidoc.Document;
 
             var projectName = doc.Title;
-            var totalElements = new FilteredElementCollector(doc).ToElements().Count;
-            var totalViews = new FilteredElementCollector(doc)
-                .OfClass(typeof(View)).ToElements().Count;
-            var totalLevels = new FilteredElementCollector(doc)
-                .OfClass(typeof(Level)).ToElements().Count;
 
             var window = new UI.MainWindow(projectName, doc);
 
