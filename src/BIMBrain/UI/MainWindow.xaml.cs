@@ -11,6 +11,7 @@ namespace BIMBrain.UI
     {
         private TextBox _questionBox;
         private TextBlock _responseText;
+        private ListBox _historyList;
         private Document _doc;
 
         public MainWindow(string projectName, Document doc)
@@ -18,12 +19,12 @@ namespace BIMBrain.UI
             _doc = doc;
             Title = "BIMBrain";
             Width = 450;
-            Height = 350;
+            Height = 450;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
             var grid = new Grid();
             grid.Margin = new Thickness(20);
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 8; i++)
                 grid.RowDefinitions.Add(new RowDefinition());
 
             var title = new TextBlock
@@ -116,12 +117,29 @@ namespace BIMBrain.UI
             grid.Children.Add(inputPanel);
             grid.Children.Add(responsePanel);
 
+            var lblHistory = new TextBlock
+            {
+                Text = "Histórico:",
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 10, 0, 0)
+            };
+            Grid.SetRow(lblHistory, 7);
+
+            _historyList = new ListBox
+            {
+                Height = 90,
+                Margin = new Thickness(0, 5, 0, 0)
+            };
+
+            grid.Children.Add(lblHistory);
+            grid.Children.Add(_historyList);
+
             Content = grid;
         }
 
         private void OnConsultarClick(object sender, RoutedEventArgs e)
         {
-            var question = _questionBox.Text.Trim().ToLowerInvariant();
+            var question = _questionBox.Text.Trim();
 
             if (string.IsNullOrEmpty(question))
             {
@@ -129,52 +147,59 @@ namespace BIMBrain.UI
                 return;
             }
 
-            if (question == "quantas tomadas existem"
-                || question == "quantas tomadas existem?"
-                || question.StartsWith("quantas tomadas existem"))
+            var normalized = question.ToLowerInvariant();
+            string answer;
+
+            if (normalized == "quantas tomadas existem"
+                || normalized == "quantas tomadas existem?"
+                || normalized.StartsWith("quantas tomadas existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_ElectricalFixtures);
-                _responseText.Text = $"Foram encontradas {count} tomadas.";
+                answer = $"Foram encontradas {count} tomadas.";
             }
-            else if (question == "quantos interruptores existem"
-                || question == "quantos interruptores existem?"
-                || question.StartsWith("quantos interruptores existem"))
+            else if (normalized == "quantos interruptores existem"
+                || normalized == "quantos interruptores existem?"
+                || normalized.StartsWith("quantos interruptores existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_LightingDevices);
-                _responseText.Text = $"Foram encontrados {count} interruptores.";
+                answer = $"Foram encontrados {count} interruptores.";
             }
-            else if (question == "quantas luminárias existem"
-                || question == "quantas luminarias existem"
-                || question == "quantas luminárias existem?"
-                || question == "quantas luminarias existem?"
-                || question.StartsWith("quantas luminárias")
-                || question.StartsWith("quantas luminarias"))
+            else if (normalized == "quantas luminárias existem"
+                || normalized == "quantas luminarias existem"
+                || normalized == "quantas luminárias existem?"
+                || normalized == "quantas luminarias existem?"
+                || normalized.StartsWith("quantas luminárias")
+                || normalized.StartsWith("quantas luminarias"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_LightingFixtures);
-                _responseText.Text = $"Foram encontradas {count} luminárias.";
+                answer = $"Foram encontradas {count} luminárias.";
             }
-            else if (question == "quantos quadros existem"
-                || question == "quantos quadros existem?"
-                || question.StartsWith("quantos quadros existem"))
+            else if (normalized == "quantos quadros existem"
+                || normalized == "quantos quadros existem?"
+                || normalized.StartsWith("quantos quadros existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_ElectricalEquipment);
-                _responseText.Text = $"Foram encontrados {count} quadros.";
+                answer = $"Foram encontrados {count} quadros.";
             }
-            else if (question == "quantos níveis existem"
-                || question == "quantos níveis existem?"
-                || question == "quantos niveis existem"
-                || question == "quantos niveis existem?"
-                || question.StartsWith("quantos níveis")
-                || question.StartsWith("quantos niveis"))
+            else if (normalized == "quantos níveis existem"
+                || normalized == "quantos níveis existem?"
+                || normalized == "quantos niveis existem"
+                || normalized == "quantos niveis existem?"
+                || normalized.StartsWith("quantos níveis")
+                || normalized.StartsWith("quantos niveis"))
             {
                 var count = new FilteredElementCollector(_doc)
                     .OfClass(typeof(Level)).ToElements().Count;
-                _responseText.Text = $"Foram encontrados {count} níveis.";
+                answer = $"Foram encontrados {count} níveis.";
             }
             else
             {
-                _responseText.Text = "Pergunta ainda não suportada pelo BIMBrain.";
+                answer = "Pergunta ainda não suportada pelo BIMBrain.";
             }
+
+            _responseText.Text = answer;
+            _historyList.Items.Add($"Q: {question}  →  {answer}");
+            _historyList.ScrollIntoView(_historyList.Items[_historyList.Items.Count - 1]);
         }
 
         private int CountByCategory(BuiltInCategory category, string familyNameFilter = null)
