@@ -119,13 +119,28 @@ namespace BIMBrain.UI
             grid.Children.Add(inputPanel);
             grid.Children.Add(responsePanel);
 
+            var historyPanel = new StackPanel { Margin = new Thickness(0, 10, 0, 0) };
+
+            var historyHeader = new StackPanel { Orientation = Orientation.Horizontal };
+
             var lblHistory = new TextBlock
             {
                 Text = "Histórico:",
-                FontWeight = FontWeights.SemiBold,
-                Margin = new Thickness(0, 10, 0, 0)
+                FontWeight = FontWeights.SemiBold
             };
-            Grid.SetRow(lblHistory, 7);
+
+            var copyBtn = new Button
+            {
+                Content = "Copiar",
+                Width = 60,
+                Height = 22,
+                Margin = new Thickness(10, 0, 0, 0),
+                FontSize = 11
+            };
+            copyBtn.Click += OnCopyHistoryClick;
+
+            historyHeader.Children.Add(lblHistory);
+            historyHeader.Children.Add(copyBtn);
 
             _historyList = new ListBox
             {
@@ -133,8 +148,11 @@ namespace BIMBrain.UI
                 Margin = new Thickness(0, 5, 0, 0)
             };
 
-            grid.Children.Add(lblHistory);
-            grid.Children.Add(_historyList);
+            historyPanel.Children.Add(historyHeader);
+            historyPanel.Children.Add(_historyList);
+            Grid.SetRow(historyPanel, 7);
+
+            grid.Children.Add(historyPanel);
 
             Content = grid;
         }
@@ -157,7 +175,7 @@ namespace BIMBrain.UI
                 var count = CountByCategory(BuiltInCategory.OST_ElectricalFixtures);
                 answer = $"Foram encontradas {count} tomadas.";
             }
-            else if (normalized.StartsWith("quantos interruptores existem"))
+            else if (normalized.StartsWith("quantas interruptores existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_LightingDevices);
                 answer = $"Foram encontrados {count} interruptores.";
@@ -167,12 +185,12 @@ namespace BIMBrain.UI
                 var count = CountByCategory(BuiltInCategory.OST_LightingFixtures);
                 answer = $"Foram encontradas {count} luminárias.";
             }
-            else if (normalized.StartsWith("quantos quadros existem"))
+            else if (normalized.StartsWith("quantas quadros existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_ElectricalEquipment);
                 answer = $"Foram encontrados {count} quadros.";
             }
-            else if (normalized.StartsWith("quantos niveis existem"))
+            else if (normalized.StartsWith("quantas niveis existem"))
             {
                 var count = new FilteredElementCollector(_doc)
                     .OfClass(typeof(Level)).ToElements().Count;
@@ -224,6 +242,22 @@ namespace BIMBrain.UI
                     sb.Append(ch);
             }
             return sb.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        private void OnCopyHistoryClick(object sender, RoutedEventArgs e)
+        {
+            if (_historyList.Items.Count == 0)
+            {
+                _responseText.Text = "Nenhum histórico para copiar.";
+                return;
+            }
+
+            var lines = _historyList.Items
+                .Cast<string>()
+                .ToArray();
+            var text = string.Join(Environment.NewLine, lines);
+            Clipboard.SetText(text);
+            _responseText.Text = $"Histórico copiado ({lines.Length} perguntas).";
         }
     }
 }
