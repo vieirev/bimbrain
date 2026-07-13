@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Electrical;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -196,6 +197,73 @@ namespace BIMBrain.UI
                     .OfClass(typeof(Level)).ToElements().Count;
                 answer = $"Foram encontrados {count} níveis.";
             }
+            else if (normalized.StartsWith("quantas ambientes existem"))
+            {
+                var count = new FilteredElementCollector(_doc)
+                    .OfCategory(BuiltInCategory.OST_Rooms)
+                    .WhereElementIsNotElementType()
+                    .ToElements().Count;
+                answer = $"Foram encontrados {count} ambientes.";
+                if (count == 0)
+                    answer += " Nenhum ambiente encontrado no arquivo local — se o modelo de arquitetura estiver vinculado por link, os ambientes dele ainda não são contados pelo BIMBrain.";
+            }
+            else if (normalized.StartsWith("quantas circuitos eletricos existem"))
+            {
+                var count = new FilteredElementCollector(_doc)
+                    .OfClass(typeof(ElectricalSystem))
+                    .ToElements().Count;
+                answer = $"Foram encontrados {count} circuitos elétricos.";
+                if (count == 0)
+                    answer += " Nenhum circuito elétrico encontrado — os elementos podem ainda não estar atrelados a circuitos nos quadros.";
+            }
+            else if (normalized.StartsWith("qual o total de area construida"))
+            {
+                var (sum, filled, total) = SumParameter(
+                    BuiltInCategory.OST_Rooms, BuiltInParameter.ROOM_AREA);
+                var area = sum * 0.092903;
+                if (filled < total)
+                    answer = $"Área total construída: {area:F2} m² (considerando apenas {filled} de {total} ambientes com área preenchida).";
+                else if (area == 0)
+                    answer = "Área total construída: 0,00 m². Nenhum ambiente encontrado no arquivo local — se o modelo de arquitetura estiver vinculado por link, os ambientes dele ainda não são contados pelo BIMBrain.";
+                else
+                    answer = $"Área total construída: {area:F2} m².";
+            }
+            else if (normalized.StartsWith("qual o comprimento total de eletrodutos"))
+            {
+                var (sum, filled, total) = SumParameter(
+                    BuiltInCategory.OST_Conduit, BuiltInParameter.CURVE_ELEM_LENGTH);
+                var length = sum * 0.3048;
+                if (filled < total)
+                    answer = $"Comprimento total de eletrodutos: {length:F2} m (considerando apenas {filled} de {total} eletrodutos com comprimento preenchido).";
+                else
+                    answer = $"Comprimento total de eletrodutos: {length:F2} m.";
+            }
+            else if (normalized.StartsWith("qual a potencia total instalada"))
+            {
+                var (sumFixtures, filledFixtures, totalFixtures) = SumPowerParameter(
+                    BuiltInCategory.OST_ElectricalFixtures);
+                var (sumEquip, filledEquip, totalEquip) = SumPowerParameter(
+                    BuiltInCategory.OST_ElectricalEquipment);
+                var totalPower = sumFixtures + sumEquip;
+                var filled = filledFixtures + filledEquip;
+                var total = totalFixtures + totalEquip;
+                if (totalPower == 0)
+                {
+                    var circuitCount = new FilteredElementCollector(_doc)
+                        .OfClass(typeof(ElectricalSystem))
+                        .ToElements().Count;
+                    if (circuitCount == 0)
+                        answer = "Potência total instalada: 0,00 VA. Nenhum circuito elétrico encontrado — a potência é consolidada a partir dos circuitos atrelados aos elementos.";
+                    else if (filled < total)
+                        answer = $"Potência total instalada: {totalPower:F2} VA (considerando apenas {filled} de {total} elementos com potência preenchida).";
+                    else
+                        answer = $"Potência total instalada: {totalPower:F2} VA.";
+                }
+                else if (filled < total)
+                    answer = $"Potência total instalada: {totalPower:F2} VA (considerando apenas {filled} de {total} elementos com potência preenchida).";
+                else
+                    answer = $"Potência total instalada: {totalPower:F2} VA.";
+            }
             else
             {
                 answer = "Pergunta ainda não suportada pelo BIMBrain.";
@@ -221,12 +289,74 @@ namespace BIMBrain.UI
                 .Count(fi => fi.Symbol.Family.Name.IndexOf(familyNameFilter, StringComparison.OrdinalIgnoreCase) >= 0);
         }
 
+        private (double sum, int filled, int total) SumParameter(
+            BuiltInCategory category, BuiltInParameter parameter, Type classType = null)
+        {
+            var collector = new FilteredElementCollector(_doc)
+                .OfCategory(category);
+
+            if (classType != null)
+                collector = collector.OfClass(classType);
+            else
+                collector = collector.WhereElementIsNotElementType();
+
+            double sum = 0;
+            int filled = 0;
+            int total = 0;
+            foreach (var element in collector.ToElements())
+            {
+                total++;
+                var param = element.get_Parameter(parameter);
+                if (param != null && param.HasValue)
+                {
+                    sum += param.AsDouble();
+                    filled++;
+                }
+            }
+            return (sum, filled, total);
+        }
+
+        private (double sum, int filled, int total) SumPowerParameter(BuiltInCategory category)
+        {
+            var collector = new FilteredElementCollector(_doc)
+                .OfCategory(category)
+                .OfClass(typeof(FamilyInstance));
+
+            string[] loadNames = {
+                "Apparent Load Phase A", "Apparent Load",
+                "Carga Aparente Fase A", "Carga Aparente",
+                "Potência", "Potencia"
+            };
+
+            double sum = 0;
+            int filled = 0;
+            int total = 0;
+            foreach (Element element in collector.ToElements())
+            {
+                total++;
+                bool found = false;
+                foreach (var name in loadNames)
+                {
+                    var param = element.LookupParameter(name);
+                    if (param != null && param.HasValue)
+                    {
+                        sum += param.AsDouble();
+                        filled++;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            return (sum, filled, total);
+        }
+
         private static string Normalize(string text)
         {
             text = text.Trim().ToLowerInvariant();
             text = text.TrimEnd('?', '!', '.', ' ');
             text = RemoveDiacritics(text);
             text = text.Replace("quantos ", "quantas ");
+            text = text.Replace("qual e ", "qual ");
             text = text.Replace("  ", " ");
             return text;
         }
