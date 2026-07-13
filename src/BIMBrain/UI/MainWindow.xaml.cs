@@ -1,6 +1,8 @@
 using Autodesk.Revit.DB;
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using Grid = System.Windows.Controls.Grid;
@@ -147,46 +149,30 @@ namespace BIMBrain.UI
                 return;
             }
 
-            var normalized = question.ToLowerInvariant();
+            var normalized = Normalize(question);
             string answer;
 
-            if (normalized == "quantas tomadas existem"
-                || normalized == "quantas tomadas existem?"
-                || normalized.StartsWith("quantas tomadas existem"))
+            if (normalized.StartsWith("quantas tomadas existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_ElectricalFixtures);
                 answer = $"Foram encontradas {count} tomadas.";
             }
-            else if (normalized == "quantos interruptores existem"
-                || normalized == "quantos interruptores existem?"
-                || normalized.StartsWith("quantos interruptores existem"))
+            else if (normalized.StartsWith("quantos interruptores existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_LightingDevices);
                 answer = $"Foram encontrados {count} interruptores.";
             }
-            else if (normalized == "quantas luminárias existem"
-                || normalized == "quantas luminarias existem"
-                || normalized == "quantas luminárias existem?"
-                || normalized == "quantas luminarias existem?"
-                || normalized.StartsWith("quantas luminárias")
-                || normalized.StartsWith("quantas luminarias"))
+            else if (normalized.StartsWith("quantas luminarias existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_LightingFixtures);
                 answer = $"Foram encontradas {count} luminárias.";
             }
-            else if (normalized == "quantos quadros existem"
-                || normalized == "quantos quadros existem?"
-                || normalized.StartsWith("quantos quadros existem"))
+            else if (normalized.StartsWith("quantos quadros existem"))
             {
                 var count = CountByCategory(BuiltInCategory.OST_ElectricalEquipment);
                 answer = $"Foram encontrados {count} quadros.";
             }
-            else if (normalized == "quantos níveis existem"
-                || normalized == "quantos níveis existem?"
-                || normalized == "quantos niveis existem"
-                || normalized == "quantos niveis existem?"
-                || normalized.StartsWith("quantos níveis")
-                || normalized.StartsWith("quantos niveis"))
+            else if (normalized.StartsWith("quantos niveis existem"))
             {
                 var count = new FilteredElementCollector(_doc)
                     .OfClass(typeof(Level)).ToElements().Count;
@@ -215,6 +201,29 @@ namespace BIMBrain.UI
                 .ToElements()
                 .OfType<FamilyInstance>()
                 .Count(fi => fi.Symbol.Family.Name.IndexOf(familyNameFilter, StringComparison.OrdinalIgnoreCase) >= 0);
+        }
+
+        private static string Normalize(string text)
+        {
+            text = text.Trim().ToLowerInvariant();
+            text = text.TrimEnd('?', '!', '.', ' ');
+            text = RemoveDiacritics(text);
+            text = text.Replace("quantos ", "quantas ");
+            text = text.Replace("  ", " ");
+            return text;
+        }
+
+        private static string RemoveDiacritics(string text)
+        {
+            var formD = text.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder(capacity: formD.Length);
+            foreach (var ch in formD)
+            {
+                var uc = CharUnicodeInfo.GetUnicodeCategory(ch);
+                if (uc != UnicodeCategory.NonSpacingMark)
+                    sb.Append(ch);
+            }
+            return sb.ToString().Normalize(NormalizationForm.FormC);
         }
     }
 }
