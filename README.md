@@ -19,13 +19,15 @@ O MVP do BIMBrain é um plugin para Autodesk Revit capaz de compreender projetos
 
 | Camada           | Tecnologia                               |
 |------------------|------------------------------------------|
-| Linguagem        | C# 12 / .NET 8                           |
+| Linguagem        | C# / .NET Framework 4.8 (net48)          |
 | Plataforma       | Autodesk Revit (Revit API)               |
 | Interface        | WPF (Windows Presentation Foundation)    |
 | IA               | LLM Provider (OpenAI inicialmente)        |
 | Testes           | xUnit + NSubstitute                      |
 | Build            | MSBuild / dotnet CLI                     |
 
+> O Revit executa o plugin via CLR do .NET Framework, mesmo em versões recentes (2025), exigindo `net48` como target — o .NET 8 SDK é usado apenas como toolchain do lado do desenvolvedor.
+ 
 ## Pré-requisitos
 
 - Windows 10 ou superior
