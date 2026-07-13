@@ -4,15 +4,14 @@ Plataforma de Inteligência Artificial para escritórios BIM.
 
 ## MVP
 
-O MVP do BIMBrain é um plugin para Autodesk Revit capaz de compreender um projeto arquitetônico e responder perguntas em linguagem natural sobre o modelo.
+O MVP do BIMBrain é um plugin para Autodesk Revit capaz de compreender projetos de engenharia — inicialmente instalações elétricas — e responder perguntas em linguagem natural sobre o modelo.
 
 ### Funcionalidades do MVP
 
-- Conectar-se a um projeto Revit aberto
-- Extrair e interpretar o modelo BIM (famílias, parâmetros, tipos, instâncias, materiais)
-- Responder perguntas em português sobre o projeto
-- Exibir respostas diretamente na interface do Revit via WPF
-- Suporte a perguntas contextuais baseadas no modelo carregado
+- Conectar-se ao projeto Revit aberto
+- Compreender elementos do modelo
+- Responder perguntas em linguagem natural
+- Apresentar respostas dentro do Revit
 
 ## Stack
 
@@ -21,7 +20,7 @@ O MVP do BIMBrain é um plugin para Autodesk Revit capaz de compreender um proje
 | Linguagem        | C# 12 / .NET 8                           |
 | Plataforma       | Autodesk Revit (Revit API)               |
 | Interface        | WPF (Windows Presentation Foundation)    |
-| IA               | OpenAI API / Azure OpenAI Service        |
+| IA               | LLM Provider (OpenAI inicialmente)        |
 | Testes           | xUnit + NSubstitute                      |
 | Build            | MSBuild / dotnet CLI                     |
 
@@ -76,11 +75,7 @@ O MVP do BIMBrain é um plugin para Autodesk Revit capaz de compreender um proje
 ```
 bimbrain
 ├── src/                  # Código fonte do plugin
-│   ├── BIMBrain.Core/    # Lógica principal e domínio
-│   ├── BIMBrain.Infra/   # Integrações externas (IA, Revit API)
-│   └── BIMBrain.UI/      # Interface WPF
 ├── tests/                # Testes automatizados
-│   └── BIMBrain.Tests/   # Testes unitários e de integração
 ├── docs/                 # Documentação técnica
 ├── .tasks/               # Tarefas do projeto
 ├── AGENTS.md             # Configuração de agentes
@@ -95,17 +90,19 @@ bimbrain
 1. Faça um fork do repositório
 2. Crie uma branch descritiva (`git checkout -b feature/nome-da-feature`)
 3. Commit suas alterações com mensagens claras (`git commit -m "descrição concisa do que foi feito"`)
-4. Mantenha o padrão de código existente (StyleCop, análise estática)
-5. Execute os testes antes de abrir o PR (`dotnet test`)
-6. Faça push (`git push origin feature/nome-da-feature`)
-7. Abra um Pull Request descrevendo a mudança
+4. Execute os testes antes de abrir o PR (`dotnet test`)
+5. Faça push (`git push origin feature/nome-da-feature`)
+6. Abra um Pull Request descrevendo a mudança
 
-## Roadmap resumido
+## Roadmap
 
-- **MVP** — Plugin Revit com perguntas em linguagem natural
-- **Expansão** — Suporte a PDF, DWG e IFC
-- **Plataforma** — Dashboard, Analytics e QA
+- **Sprint 0** — Fundação
+- **Sprint 1** — Plugin Base
+- **Sprint 2** — Leitura do Modelo Revit
+- **Sprint 3** — Perguntas em Linguagem Natural
 
-## Licença
+## Filosofia do Projeto
 
-Este projeto está licenciado sob a licença MIT — veja o arquivo [LICENSE](LICENSE) para detalhes.
+O BIMBrain será desenvolvido de forma incremental. Cada Sprint deverá entregar uma funcionalidade completa. A simplicidade deve ser priorizada. Evitar arquitetura desnecessária. O foco é validar o MVP antes de expandir funcionalidades.
+
+
