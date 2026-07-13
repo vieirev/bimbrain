@@ -13,3 +13,5 @@
 - RibbonPanel
 - PushButtonData
 - TaskDialog
+- View
+- Level
