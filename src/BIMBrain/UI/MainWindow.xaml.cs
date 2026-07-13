@@ -4,7 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using Grid = System.Windows.Controls.Grid;
@@ -17,6 +20,10 @@ namespace BIMBrain.UI
         private TextBlock _responseText;
         private ListBox _historyList;
         private Document _doc;
+        private static readonly HttpClient _httpClient = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30)
+        };
 
         public MainWindow(string projectName, Document doc)
         {
@@ -87,8 +94,18 @@ namespace BIMBrain.UI
             };
             consultarBtn.Click += OnConsultarClick;
 
+            var testIaBtn = new Button
+            {
+                Content = "Testar IA",
+                Width = 80,
+                Height = 25,
+                Margin = new Thickness(10, 0, 0, 0)
+            };
+            testIaBtn.Click += OnTestIaClick;
+
             inputPanel.Children.Add(_questionBox);
             inputPanel.Children.Add(consultarBtn);
+            inputPanel.Children.Add(testIaBtn);
             Grid.SetRow(inputPanel, 5);
 
             var responsePanel = new StackPanel
@@ -299,6 +316,38 @@ namespace BIMBrain.UI
             _historyList.ScrollIntoView(_historyList.Items[_historyList.Items.Count - 1]);
         }
 
+        private async void OnTestIaClick(object sender, RoutedEventArgs e)
+        {
+            _responseText.Text = "Conectando ao Ollama...";
+
+            try
+            {
+                var json = "{\"model\":\"qwen3\",\"messages\":[{\"role\":\"user\",\"content\":\"Diga apenas \\\"BIMBrain conectado com sucesso\\\".\"}],\"stream\":false}";
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PostAsync("http://localhost:11434/api/chat", content);
+                var responseBody = await response.Content.ReadAsStringAsync();
+
+                var chatResponse = JsonSerializer.Deserialize<OllamaChatResponse>(responseBody);
+                _responseText.Text = chatResponse?.Message?.Content ?? "Resposta vazia do Ollama.";
+            }
+            catch (HttpRequestException)
+            {
+                _responseText.Text = "Não foi possível conectar ao Ollama. Verifique se o Ollama está rodando em localhost:11434.";
+            }
+            catch (TaskCanceledException)
+            {
+                _responseText.Text = "Conexão com Ollama excedeu o tempo limite.";
+            }
+            catch (JsonException)
+            {
+                _responseText.Text = "Resposta inválida recebida do Ollama (erro de JSON).";
+            }
+            catch (Exception ex)
+            {
+                _responseText.Text = $"Erro: {ex.Message}";
+            }
+        }
+
         private int CountByCategory(BuiltInCategory category, string familyNameFilter = null)
         {
             var collector = new FilteredElementCollector(_doc)
@@ -454,5 +503,16 @@ namespace BIMBrain.UI
             Clipboard.SetText(text);
             _responseText.Text = $"Histórico copiado ({lines.Length} perguntas).";
         }
+    }
+
+    internal class OllamaChatResponse
+    {
+        public OllamaMessage Message { get; set; }
+    }
+
+    internal class OllamaMessage
+    {
+        public string Role { get; set; }
+        public string Content { get; set; }
     }
 }
