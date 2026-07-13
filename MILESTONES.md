@@ -10,6 +10,7 @@ O objetivo deste documento é registrar os principais marcos funcionais do proje
 | M4 | Histórico de perguntas | ✅ Concluído |
 | M5 | Cinco perguntas suportadas | ✅ Concluído |
 | M6 | Primeira versão para testes externos | ⬜ Planejado |
+| M7 | Dez perguntas suportadas | ✅ Concluído |
 
 ## Princípios
 

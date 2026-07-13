@@ -1,6 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -264,6 +265,30 @@ namespace BIMBrain.UI
                 else
                     answer = $"Potência total instalada: {totalPower:F2} VA.";
             }
+            else if (normalized.StartsWith("quantas vistas existem"))
+            {
+                var count = new FilteredElementCollector(_doc)
+                    .OfClass(typeof(View))
+                    .ToElements()
+                    .Cast<View>()
+                    .Count(v => !v.IsTemplate);
+                answer = $"Foram encontradas {count} vistas.";
+            }
+            else if (normalized.StartsWith("quantas folhas existem"))
+            {
+                var count = new FilteredElementCollector(_doc)
+                    .OfClass(typeof(ViewSheet))
+                    .ToElements().Count;
+                answer = $"Foram encontradas {count} folhas.";
+            }
+            else if (normalized.StartsWith("qual categoria possui mais elementos"))
+            {
+                answer = FindCategoryWithMostElements();
+            }
+            else if (normalized.StartsWith("quais familias estao carregadas"))
+            {
+                answer = ListLoadedFamilies();
+            }
             else
             {
                 answer = "Pergunta ainda não suportada pelo BIMBrain.";
@@ -348,6 +373,46 @@ namespace BIMBrain.UI
                 }
             }
             return (sum, filled, total);
+        }
+
+        private string FindCategoryWithMostElements()
+        {
+            var categories = new List<(string name, int count)>
+            {
+                ("tomadas", CountByCategory(BuiltInCategory.OST_ElectricalFixtures)),
+                ("interruptores", CountByCategory(BuiltInCategory.OST_LightingDevices)),
+                ("luminárias", CountByCategory(BuiltInCategory.OST_LightingFixtures)),
+                ("quadros", CountByCategory(BuiltInCategory.OST_ElectricalEquipment)),
+                ("níveis", new FilteredElementCollector(_doc).OfClass(typeof(Level)).ToElements().Count),
+                ("ambientes", new FilteredElementCollector(_doc).OfCategory(BuiltInCategory.OST_Rooms)
+                    .WhereElementIsNotElementType().ToElements().Count),
+                ("eletrodutos", new FilteredElementCollector(_doc).OfCategory(BuiltInCategory.OST_Conduit)
+                    .WhereElementIsNotElementType().ToElements().Count),
+            };
+
+            var max = categories.OrderByDescending(c => c.count).First();
+            return $"A categoria com mais elementos é '{max.name}', com {max.count} elementos.";
+        }
+
+        private string ListLoadedFamilies()
+        {
+            var groups = new FilteredElementCollector(_doc)
+                .OfClass(typeof(FamilyInstance))
+                .ToElements()
+                .Cast<FamilyInstance>()
+                .GroupBy(fi => fi.Symbol.Family.Name)
+                .OrderBy(g => g.Key)
+                .Select(g => $"{g.Key}: {g.Count()} instâncias")
+                .ToList();
+
+            if (groups.Count == 0)
+                return "Nenhuma família carregada encontrada.";
+
+            var sb = new StringBuilder();
+            sb.AppendLine($"Foram encontradas {groups.Count} famílias carregadas:");
+            foreach (var line in groups)
+                sb.AppendLine($"- {line}");
+            return sb.ToString().TrimEnd();
         }
 
         private static string Normalize(string text)
