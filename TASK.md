@@ -1,54 +1,16 @@
-# TASK
+# TASK INDEX
 
-## ID
+A partir de TASK-0007, cada task possui um arquivo próprio dentro da pasta `.tasks/`.
 
-TASK-0002
+Novas tasks devem ser criadas como `.tasks/TASK-NNNN.md` seguindo o formato padrão (Título, Objetivo, Status, Resultado, Commit relacionado, Observações).
 
-## Nome
+## Tasks
 
-Criar README.md
-
-## Objetivo
-
-Escrever o README oficial do projeto BIMBrain.
-
-## Contexto
-
-Este repositório contém o código fonte do BIMBrain.
-
-O BIMBrain é uma plataforma de Inteligência Artificial para escritórios BIM.
-
-O MVP será um plugin para Revit capaz de compreender um projeto e responder perguntas em linguagem natural.
-
-O README deve refletir apenas o MVP.
-
-Não mencionar funcionalidades futuras como PDF, DWG, IFC, Dashboard, Analytics ou QA.
-
-## O README deve conter
-
-- Nome do projeto
-- Descrição curta
-- Objetivo do MVP
-- Stack utilizada
-- Estrutura do repositório
-- Como contribuir
-- Roadmap resumido
-- Licença
-
-## Não fazer
-
-Não inventar funcionalidades.
-
-Não exagerar.
-
-Não criar textos de marketing.
-
-## Critérios de aceite
-
-README claro.
-
-README profissional.
-
-README curto.
-
-Entre 80 e 150 linhas.
+| Task | Título | Status |
+|------|--------|--------|
+| TASK-0001 | Inicializar estrutura do projeto | Done |
+| TASK-0002 | Criar README.md | Done |
+| TASK-0003 | Criar PROJECT_MEMORY.md | Done |
+| TASK-0004 | Criar ROADMAP.md | Done |
+| TASK-0005 | Criar AGENTS.md | Done |
+| TASK-0006 | Criar primeiro plugin Revit funcional | Done |
