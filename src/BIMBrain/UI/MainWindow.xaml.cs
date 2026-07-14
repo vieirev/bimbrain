@@ -2,6 +2,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
@@ -18,9 +19,18 @@ namespace BIMBrain.UI
     public class MainWindow : Window
     {
         private TextBox _questionBox;
-        private TextBlock _responseText;
-        private ListBox _historyList;
         private Document _doc;
+        private string _projectName;
+        private readonly Stopwatch _stopwatch = new Stopwatch();
+
+        private TextBlock _responseStatus;
+        private TextBlock _responseProject;
+        private TextBlock _responseQuestion;
+        private TextBlock _responseResultLabel;
+        private TextBlock _responseResultValue;
+        private TextBlock _responseElapsed;
+
+        private ListBox _historyList;
         private static readonly HttpClient _httpClient = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(120)
@@ -29,6 +39,7 @@ namespace BIMBrain.UI
         public MainWindow(string projectName, Document doc)
         {
             _doc = doc;
+            _projectName = projectName;
             Title = "BIMBrain";
             Width = 520;
             Height = 600;
@@ -114,21 +125,54 @@ namespace BIMBrain.UI
                 Margin = new Thickness(0, 10, 0, 0)
             };
 
-            var lblResponse = new TextBlock
+            _responseStatus = new TextBlock
             {
-                Text = "Resposta:",
-                FontWeight = FontWeights.SemiBold
+                FontWeight = FontWeights.Bold,
+                FontSize = 14,
+                Margin = new Thickness(0, 0, 0, 5)
             };
 
-            _responseText = new TextBlock
+            var responseSep = new Separator { Margin = new Thickness(0, 0, 0, 5) };
+
+            _responseProject = new TextBlock
             {
-                Text = "Aguardando consulta...",
-                Margin = new Thickness(10, 5, 0, 0),
-                TextWrapping = TextWrapping.Wrap
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 2)
             };
 
-            responsePanel.Children.Add(lblResponse);
-            responsePanel.Children.Add(_responseText);
+            _responseQuestion = new TextBlock
+            {
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(0, 0, 0, 5)
+            };
+
+            _responseResultLabel = new TextBlock
+            {
+                Text = "Resultado:",
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(0, 0, 0, 3)
+            };
+
+            _responseResultValue = new TextBlock
+            {
+                TextWrapping = TextWrapping.Wrap,
+                Margin = new Thickness(10, 0, 0, 5)
+            };
+
+            _responseElapsed = new TextBlock
+            {
+                Margin = new Thickness(0, 3, 0, 0)
+            };
+
+            SetInitialState();
+
+            responsePanel.Children.Add(_responseStatus);
+            responsePanel.Children.Add(responseSep);
+            responsePanel.Children.Add(_responseProject);
+            responsePanel.Children.Add(_responseQuestion);
+            responsePanel.Children.Add(_responseResultLabel);
+            responsePanel.Children.Add(_responseResultValue);
+            responsePanel.Children.Add(_responseElapsed);
             Grid.SetRow(responsePanel, 6);
 
             grid.Children.Add(title);
@@ -177,18 +221,65 @@ namespace BIMBrain.UI
             Content = grid;
         }
 
+        private void SetInitialState()
+        {
+            _responseStatus.Text = "Aguardando consulta...";
+            _responseProject.Visibility = System.Windows.Visibility.Collapsed;
+            _responseQuestion.Text = "Nenhuma pergunta informada.\nDigite uma pergunta antes de consultar.";
+            _responseResultLabel.Visibility = System.Windows.Visibility.Collapsed;
+            _responseResultValue.Visibility = System.Windows.Visibility.Collapsed;
+            _responseElapsed.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
+        private void SetResponseSuccess(string question, string answer, long elapsedMs)
+        {
+            _responseStatus.Text = "Consulta concluída";
+            _responseProject.Text = $"Projeto: {_projectName}";
+            _responseProject.Visibility = System.Windows.Visibility.Visible;
+            _responseQuestion.Text = $"Pergunta: {question}";
+            _responseQuestion.Visibility = System.Windows.Visibility.Visible;
+            _responseResultLabel.Visibility = System.Windows.Visibility.Visible;
+            _responseResultValue.Text = answer;
+            _responseResultValue.Visibility = System.Windows.Visibility.Visible;
+            _responseElapsed.Text = $"Tempo: {elapsedMs} ms";
+            _responseElapsed.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void SetResponseError(string message)
+        {
+            _responseStatus.Text = "Consulta não realizada";
+            _responseProject.Visibility = System.Windows.Visibility.Collapsed;
+            _responseQuestion.Visibility = System.Windows.Visibility.Collapsed;
+            _responseResultLabel.Visibility = System.Windows.Visibility.Collapsed;
+            _responseResultValue.Visibility = System.Windows.Visibility.Collapsed;
+            _responseElapsed.Visibility = System.Windows.Visibility.Collapsed;
+            _responseQuestion.Text = $"Motivo:\n{message}";
+            _responseQuestion.Visibility = System.Windows.Visibility.Visible;
+        }
+
+        private void SetResponseSimple(string status, string message)
+        {
+            _responseStatus.Text = status;
+            _responseProject.Visibility = System.Windows.Visibility.Collapsed;
+            _responseQuestion.Text = message;
+            _responseQuestion.Visibility = System.Windows.Visibility.Visible;
+            _responseResultLabel.Visibility = System.Windows.Visibility.Collapsed;
+            _responseResultValue.Visibility = System.Windows.Visibility.Collapsed;
+            _responseElapsed.Visibility = System.Windows.Visibility.Collapsed;
+        }
+
         private async void OnConsultarClick(object sender, RoutedEventArgs e)
         {
             var question = _questionBox.Text.Trim();
 
             if (string.IsNullOrEmpty(question))
             {
-                _responseText.Text = "Digite uma pergunta.";
+                SetResponseSimple("Atenção", "Nenhuma pergunta informada.\nDigite uma pergunta antes de consultar.");
                 return;
             }
 
             var normalized = Normalize(question);
-            var start = DateTime.UtcNow;
+            _stopwatch.Restart();
             string answer;
 
             if (normalized.StartsWith("quantas tomadas existem"))
@@ -310,13 +401,28 @@ namespace BIMBrain.UI
             }
             else
             {
-                _responseText.Text = "Consultando IA... (pode levar até 2 minutos para perguntas mais complexas)";
+                SetResponseSimple("Consultando IA...", "Aguardando resposta da IA.\nIsso pode levar até 2 minutos para perguntas mais complexas.");
                 answer = await TryResolveWithOllamaAsync(question);
             }
 
-            _responseText.Text = answer;
-            var elapsed = (int)(DateTime.UtcNow - start).TotalSeconds;
-            _historyList.Items.Add($"Q: {question}  →  {answer} ({elapsed}s)");
+            var elapsedMs = _stopwatch.ElapsedMilliseconds;
+
+            if (answer != null)
+            {
+                if (answer.StartsWith("Pergunta ainda não suportada") ||
+                    answer.StartsWith("A IA demorou") ||
+                    answer.StartsWith("O BIMBrain tentou"))
+                {
+                    SetResponseError(answer);
+                }
+                else
+                {
+                    SetResponseSuccess(question, answer, elapsedMs);
+                }
+            }
+
+            var timestamp = DateTime.Now.ToString("HH:mm:ss");
+            _historyList.Items.Add($"[{timestamp}] {question}  →  {answer} ({elapsedMs} ms)");
             _historyList.ScrollIntoView(_historyList.Items[_historyList.Items.Count - 1]);
         }
 
@@ -609,7 +715,7 @@ namespace BIMBrain.UI
 
         private async void OnTestIaClick(object sender, RoutedEventArgs e)
         {
-            _responseText.Text = "Conectando ao Ollama...";
+            SetResponseSimple("Teste de IA", "Conectando ao Ollama...");
 
             try
             {
@@ -619,23 +725,24 @@ namespace BIMBrain.UI
                 var responseBody = await response.Content.ReadAsStringAsync();
 
                 var chatResponse = JsonSerializer.Deserialize<OllamaChatResponse>(responseBody);
-                _responseText.Text = chatResponse?.Message?.Content ?? "Resposta vazia do Ollama.";
+                var reply = chatResponse?.Message?.Content ?? "Resposta vazia do Ollama.";
+                SetResponseSimple("Teste de IA", $"Resposta do Ollama:\n{reply}");
             }
             catch (HttpRequestException)
             {
-                _responseText.Text = "Não foi possível conectar ao Ollama. Verifique se o Ollama está rodando em localhost:11434.";
+                SetResponseSimple("Teste de IA", "Não foi possível conectar ao Ollama. Verifique se o Ollama está rodando em localhost:11434.");
             }
             catch (TaskCanceledException)
             {
-                _responseText.Text = "Conexão com Ollama excedeu o tempo limite.";
+                SetResponseSimple("Teste de IA", "Conexão com Ollama excedeu o tempo limite.");
             }
             catch (JsonException)
             {
-                _responseText.Text = "Resposta inválida recebida do Ollama (erro de JSON).";
+                SetResponseSimple("Teste de IA", "Resposta inválida recebida do Ollama (erro de JSON).");
             }
             catch (Exception ex)
             {
-                _responseText.Text = $"Erro: {ex.Message}";
+                SetResponseSimple("Teste de IA", $"Erro: {ex.Message}");
             }
         }
 
@@ -783,7 +890,7 @@ namespace BIMBrain.UI
         {
             if (_historyList.Items.Count == 0)
             {
-                _responseText.Text = "Nenhum histórico para copiar.";
+                SetResponseSimple("Histórico", "Nenhum histórico para copiar.");
                 return;
             }
 
@@ -792,7 +899,7 @@ namespace BIMBrain.UI
                 .ToArray();
             var text = string.Join(Environment.NewLine, lines);
             Clipboard.SetText(text);
-            _responseText.Text = $"Histórico copiado ({lines.Length} perguntas).";
+            SetResponseSimple("Histórico", $"Histórico copiado ({lines.Length} perguntas).");
         }
     }
 

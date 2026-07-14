@@ -1,0 +1,244 @@
+# BIMBrain — Relatório de Auditoria
+
+## 1. Estrutura Completa
+
+.tasks/                 (25 arquivos TASK-NNNN.md)
+docs/
+  DEV_ENVIRONMENT.md
+  SPRINT-0001.md
+  US-0001.md
+  US-0002.md
+  US-0003.md
+knowledge/
+  README.md
+  revit/
+    README.md
+    API.md
+    ELECTRICAL.md
+    LINKS.md
+src/
+  BIMBrain/
+    App.cs
+    BIMBrain.addin
+    BIMBrain.csproj
+    Command.cs
+    UI/
+      MainWindow.xaml.cs
+tests/
+.gitignore
+AGENTS.md
+ICEBOX.md
+LICENSE
+MILESTONES.md
+PROJECT_MEMORY.md
+README.md
+ROADMAP.md
+TASK.md
+
+---
+
+## 2. Documentação
+
+| Documento | Existe | Conteúdo |
+|-----------|--------|----------|
+| README.md | Sim | Stack (net48), instalação, pré-requisitos, Sprints |
+| PROJECT_MEMORY.md | Sim | Escopo, stack, arquitetura, decisões, limitações conhecidas |
+| ROADMAP.md | Sim | Sprints 0-3 do MVP |
+| TASK.md | Sim | Índice com TASK-0001 a TASK-0006 |
+| AGENTS.md | Sim | Regras de comportamento para agentes de IA |
+| ICEBOX.md | Sim | Vazio (0 linhas) |
+| MILESTONES.md | Sim | 8 marcos (M1-M8), 6 concluidos, 1 planejado |
+| knowledge/ | Sim | 5 arquivos sobre Revit API |
+| docs/ | Sim | DEV_ENVIRONMENT, SPRINT-0001, US-0001/2/3 |
+| .tasks/ | Sim | 25 arquivos TASK |
+
+---
+
+## 3. Tasks
+
+| Task | Status |
+|------|--------|
+| TASK-0001 | Concluida |
+| TASK-0002 | Concluida |
+| TASK-0003 | Concluida |
+| TASK-0004 | Concluida |
+| TASK-0005 | Concluida |
+| TASK-0006 | Concluida |
+| TASK-0013 | Aprovado |
+| TASK-0013.1 | Aprovado |
+| TASK-0014 | Aprovado |
+| TASK-0015 | Aprovado |
+| TASK-0016 | Aprovado |
+| TASK-0017 | Aprovado apos correcao |
+| TASK-0017.1 | Aprovado |
+| TASK-0018 | Aprovado apos correcao |
+| TASK-0018.1 | Aprovado |
+| TASK-0019 | Aprovado |
+| TASK-0020 | Aprovado |
+| TASK-0021 | Aprovado |
+| TASK-0022 | Aprovado apos correcao |
+| TASK-0022.1 | Aprovado |
+| TASK-0023 | Aprovado |
+| TASK-0024 | Aprovado apos correcao |
+| TASK-0024.1 | Aprovado |
+| TASK-0024.2 | Aprovado |
+| TASK-0025 | Aprovado |
+
+25 tasks: 25 concluidas, 0 em andamento, 0 pendentes.
+
+---
+
+## 4. User Stories
+
+| US | Titulo | Status |
+|----|--------|--------|
+| US-0001 | Exibir informacoes basicas do modelo Revit | Definida |
+| US-0002 | Interface de consulta simples | Definida |
+| US-0003 | Consultar quantidade de tomadas | Definida |
+
+---
+
+## 5. Codigo
+
+Projetos: 1 (src/BIMBrain/BIMBrain.csproj)
+Solution: Nao existe .sln
+Target: net48 (x64)
+
+Dependencias externas: RevitAPI.dll, RevitAPIUI.dll, System.Text.Json (NuGet v10.0.9)
+
+Namespaces e classes:
+
+| Arquivo | Namespace | Classes |
+|---------|-----------|---------|
+| App.cs (29 linhas) | BIMBrain | App : IExternalApplication |
+| Command.cs (27 linhas) | BIMBrain | Command : IExternalCommand |
+| MainWindow.xaml.cs (824 linhas) | BIMBrain.UI | MainWindow, OllamaChatResponse, OllamaMessage, OllamaToolCall, OllamaFunctionCall |
+
+Total: 4 arquivos .cs, 7 classes, ~880 linhas de codigo.
+
+---
+
+## 6. Funcionalidades Implementadas
+
+| Funcionalidade | Status |
+|----------------|--------|
+| Plugin carrega no Revit 2025 | OK |
+| Ribbon tab "BIMBrain" criada | OK |
+| Botao "Abrir BIMBrain" | OK |
+| Janela WPF code-only | OK |
+| Leitura do nome do projeto ativo | OK |
+| Consulta de tomadas (Electrical Fixtures) | OK |
+| Consulta de interruptores (Lighting Devices) | OK |
+| Consulta de luminarias (Lighting Fixtures) | OK |
+| Consulta de quadros (Electrical Equipment) | OK |
+| Consulta de niveis (Level) | OK |
+| Consulta de ambientes (Rooms) | OK |
+| Consulta de circuitos eletricos (ElectricalSystem) | OK |
+| Consulta de area construida (ROOM_AREA) | OK |
+| Consulta de comprimento de eletrodutos (Conduit) | OK |
+| Consulta de potencia instalada (Apparent Load lookup) | OK |
+| Consulta de vistas (Views, excluindo templates) | OK |
+| Consulta de folhas (ViewSheets) | OK |
+| Consulta de categoria com mais elementos | OK |
+| Consulta de familias carregadas (GroupBy) | OK |
+| Historico de perguntas em memoria (ListBox) | OK |
+| Botao Copiar historico | OK |
+| Normalize(): acentos, maiusculas, quantos/quantas | OK |
+| Mensagens contextuais para resultados zerados | OK |
+| Botao "Testar IA" (integracao Ollama isolada) | OK |
+| Tool calling: IA resolve perguntas fora dos 14 padroes | OK |
+| Temporizador no historico (segundos de resposta) | OK |
+| Tratamento de timeout (120s) com mensagem especifica | OK |
+| Documentacao corrigida (net48) | OK |
+| Limitacao conhecida registrada no PROJECT_MEMORY | OK |
+
+Total: 28 funcionalidades implementadas.
+
+---
+
+## 7. Funcionalidades Parcialmente Implementadas
+
+Nenhuma. Tudo que foi iniciado foi concluido ate o estado atual.
+
+---
+
+## 8. Funcionalidades Ainda Nao Implementadas
+
+| Funcionalidade | Prevista em |
+|----------------|-------------|
+| Primeira versao para testes externos | Marco M6 (planejado) |
+| OpenAI integration | README (LLM Provider) |
+| Testes automatizados (xUnit + NSubstitute) | README |
+| Function calling completo | README (IA) |
+| Servidor intermediario | Arquitetura futura |
+| PDF/DWG/IFC export | Fora do escopo |
+| Dashboard/Analytics | Fora do escopo |
+| Multiusuario | Fora do escopo |
+| Licenciamento | Fora do escopo |
+
+---
+
+## 9. Debito Tecnico
+
+| Tipo | Ocorrencias | Local |
+|------|-------------|-------|
+| TODO | 0 | - |
+| FIXME | 0 | - |
+| HACK | 0 | - |
+| XXX | 0 | - |
+| Variavel nao utilizada | 1 | SumPowerParameter() linha ~702 (variavel 'found' nunca usada) |
+| Warnings MSB3277 | 11 | Assembly unification (benigno em plugins Revit) |
+| Comentarios no codigo | 0 | Nenhum comentario em nenhum arquivo .cs |
+
+Divida tecnica muito baixa - nenhum TODO/FIXME pendente.
+
+---
+
+## 10. Build
+
+| Item | Resultado |
+|------|-----------|
+| Compila? | Sim |
+| Erros | 0 |
+| Warnings | 12 (11 MSB3277 assembly unification + 1 CS0219 unused variable) |
+| Duracao | ~2 segundos |
+
+---
+
+## 11. Git
+
+Branch atual: main (unica branch)
+Tag: v0.1.0
+
+Ultimos 15 commits:
+
+e804bf0 docs: add retroactive task history for TASK-0013 to TASK-0025
+b2284d2 docs: register known limitation of tool calling scope
+658c0ef feat: resolve unmatched questions via Ollama tool calling
+4e4082b docs: correct target framework to net48 in README
+92409c0 fix: use JSON deserialization for Ollama response parsing
+94c9c23 feat: add views, sheets, top category and family list queries
+4f02443 feat: add contextual warnings for zero-result queries
+f84d411 fix: correct canonical question patterns after normalization
+aa4f961 feat: improve query recognition with accent and quantos/quantas tolerance
+2e94bf1 docs: mark M4 as completed
+63515f1 feat: add in-memory question history panel
+d419390 docs: mark M5 as completed
+1c48d14 feat: support switch, lighting, panel and level count queries
+e7e440b docs: add project milestones
+5d21e13 feat: answer first Revit query for electrical fixtures
+
+---
+
+## 12. Avaliacao Geral
+
+| Criterio | Nota | Justificativa |
+|----------|------|---------------|
+| Organizacao | 8/10 | Estrutura clara de diretorios (src/, docs/, .tasks/, knowledge/). Faltam: .sln, .gitignore talvez incompleto (bin/obj sendo commitados). Task retroativas bem organizadas, mas numero grande de sub-tasks (.1, .2) indica que planejamento poderia ter sido mais granular antes. |
+| Arquitetura | 5/10 | Tudo em um unico arquivo de 824 linhas (MainWindow.xaml.cs) sem separacao por camadas. Sem interface/abstracao, sem DI, sem servicos. Para um MVP e aceitavel, mas a escalabilidade e limitada. O fluxo IF/ELSE para 14 perguntas ja esta no limite de complexidade ciclomatica. |
+| Documentacao | 7/10 | README, PROJECT_MEMORY, ROADMAP, AGENTS, MILESTONES - todos presentes e coerentes. Tasks retroativas documentadas. Faltam: diagramas de arquitetura, ADRs formais, docs de API de integracao com Ollama. A documentacao existe mas e textual apenas. |
+| Codigo | 6/10 | Codigo funcional, zero erros de build, baixissima divida tecnica (sem TODOs). Porem: 824 linhas no handler view, IF/ELSE repetitivo, logica de query e formatacao misturadas, nomes de metodos e variaveis em portugues e ingles misturados. Ausencia total de comentarios (logica de negocio justificaria comentarios). |
+| Escalabilidade | 3/10 | Arquitetura monolitica (tudo na Window) nao escala para mais de 14 queries ou multiplos LLMs. Cada nova query requer adicionar IF/ELSE no mesmo arquivo. O tool calling via Ollama mitiga um pouco, mas a falta de separacao de responsabilidades e a principal barreira. |
+
+Media geral: 5.8/10 - MVP solido, funcional e bem documentado para o estagio atual.
+O codigo precisa de refatoracao para o proximo nivel.
