@@ -15,6 +15,18 @@ O MVP do BIMBrain é um plugin para Autodesk Revit capaz de compreender projetos
 - Responder perguntas em linguagem natural
 - Apresentar respostas dentro do Revit
 
+## Visão do Produto
+
+O BIMBrain evoluiu de um MVP para uma **plataforma de engenharia assistida por IA**.
+A IA auxilia o engenheiro, mas nunca substitui sua responsabilidade técnica.
+
+Documentação de direção do produto:
+
+- [Visão do Produto](docs/VISION.md)
+- [Arquitetura](docs/ARCHITECTURE.md)
+- [Princípios do Produto](docs/PRODUCT_PRINCIPLES.md)
+- [Engines](docs/ENGINES.md)
+
 ## Stack
 
 | Camada           | Tecnologia                               |

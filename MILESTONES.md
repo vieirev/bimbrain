@@ -2,16 +2,16 @@
 
 O objetivo deste documento é registrar os principais marcos funcionais do projeto.
 
-| Marco | Objetivo | Status |
-|-------|----------|--------|
-| M1 | Plugin carrega no Revit | ✅ Concluído |
-| M2 | Leitura do projeto ativo | ✅ Concluído |
-| M3 | Primeira pergunta respondida — "Quantas tomadas existem?" via Revit API | ✅ Concluído |
-| M4 | Histórico de perguntas | ✅ Concluído |
-| M5 | Cinco perguntas suportadas | ✅ Concluído |
-| M6 | Primeira versão para testes externos | ⬜ Planejado |
-| M7 | Dez perguntas suportadas | ✅ Concluído |
-| M8 | Quatorze perguntas suportadas | ✅ Concluído |
+| Marco | Objetivo | EPIC | Status |
+|-------|----------|------|--------|
+| M1 | Plugin carrega no Revit | EPIC-0001 | ✅ Concluído |
+| M2 | Leitura do projeto ativo | EPIC-0001 | ✅ Concluído |
+| M3 | Primeira pergunta respondida — "Quantas tomadas existem?" via Revit API | EPIC-0001 | ✅ Concluído |
+| M4 | Histórico de perguntas | EPIC-0001 | ✅ Concluído |
+| M5 | Cinco perguntas suportadas | EPIC-0001 | ✅ Concluído |
+| M6 | Primeira versão para testes externos | EPIC-0006 | ⬜ Planejado |
+| M7 | Dez perguntas suportadas | EPIC-0001 | ✅ Concluído |
+| M8 | Quatorze perguntas suportadas | EPIC-0001 | ✅ Concluído |
 
 ## Princípios
 
