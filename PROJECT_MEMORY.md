@@ -69,3 +69,7 @@ Implementação
 Revisão
 ↓
 Commit
+
+# Limitações Conhecidas
+
+- **Tool calling com qwen3:** O Ollama/qwen3 pode escolher uma função existente mesmo quando ela não é a correspondência ideal para a pergunta, caso nenhuma das 14 funções disponíveis seja adequada (ex.: "Quantos elementos existem?" respondeu com lista de famílias em vez de total geral). Não é erro técnico — é limitação esperada de tool calling com escopo de funções limitado. Possíveis soluções futuras: adicionar função de contagem total geral, ou refinar descrições das tools para reduzir escolhas fracas.
