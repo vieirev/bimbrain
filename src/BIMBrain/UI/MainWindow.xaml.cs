@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,15 +23,15 @@ namespace BIMBrain.UI
         private Document _doc;
         private static readonly HttpClient _httpClient = new HttpClient
         {
-            Timeout = TimeSpan.FromSeconds(30)
+            Timeout = TimeSpan.FromSeconds(120)
         };
 
         public MainWindow(string projectName, Document doc)
         {
             _doc = doc;
             Title = "BIMBrain";
-            Width = 450;
-            Height = 450;
+            Width = 520;
+            Height = 600;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
 
             var grid = new Grid();
@@ -176,7 +177,7 @@ namespace BIMBrain.UI
             Content = grid;
         }
 
-        private void OnConsultarClick(object sender, RoutedEventArgs e)
+        private async void OnConsultarClick(object sender, RoutedEventArgs e)
         {
             var question = _questionBox.Text.Trim();
 
@@ -187,6 +188,7 @@ namespace BIMBrain.UI
             }
 
             var normalized = Normalize(question);
+            var start = DateTime.UtcNow;
             string answer;
 
             if (normalized.StartsWith("quantas tomadas existem"))
@@ -308,12 +310,301 @@ namespace BIMBrain.UI
             }
             else
             {
-                answer = "Pergunta ainda não suportada pelo BIMBrain.";
+                _responseText.Text = "Consultando IA... (pode levar até 2 minutos para perguntas mais complexas)";
+                answer = await TryResolveWithOllamaAsync(question);
             }
 
             _responseText.Text = answer;
-            _historyList.Items.Add($"Q: {question}  →  {answer}");
+            var elapsed = (int)(DateTime.UtcNow - start).TotalSeconds;
+            _historyList.Items.Add($"Q: {question}  →  {answer} ({elapsed}s)");
             _historyList.ScrollIntoView(_historyList.Items[_historyList.Items.Count - 1]);
+        }
+
+        private async Task<string> TryResolveWithOllamaAsync(string question)
+        {
+            try
+            {
+                var payload = new
+                {
+                    model = "qwen3",
+                    messages = new[] { new { role = "user", content = question } },
+                    tools = GetToolSchemas(),
+                    stream = false
+                };
+                var requestJson = JsonSerializer.Serialize(payload);
+                var httpContent = new StringContent(requestJson, Encoding.UTF8, "application/json");
+                var httpResponse = await _httpClient.PostAsync("http://localhost:11434/api/chat", httpContent);
+                var responseBody = await httpResponse.Content.ReadAsStringAsync();
+                var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                var chatResponse = JsonSerializer.Deserialize<OllamaChatResponse>(responseBody, opts);
+
+                if (chatResponse?.Message?.ToolCalls != null && chatResponse.Message.ToolCalls.Count > 0)
+                {
+                    var toolCall = chatResponse.Message.ToolCalls[0];
+                    var result = ExecuteToolByName(toolCall.Function.Name);
+                    if (result != null)
+                        return result;
+                }
+
+                return "O BIMBrain tentou entender sua pergunta com IA, mas não encontrou uma função correspondente. Pergunta ainda não suportada.";
+            }
+            catch (TaskCanceledException ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[BIMBrain-IA] Timeout na pergunta: \"{question}\" | {ex.GetType().FullName} — {ex.Message}");
+                return "A IA demorou demais para responder. Tente novamente ou reformule a pergunta.";
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[BIMBrain-IA] Pergunta: \"{question}\" | Erro: {ex.GetType().FullName} — {ex.Message}");
+                return "Pergunta ainda não suportada pelo BIMBrain.";
+            }
+        }
+
+        private static object[] GetToolSchemas()
+        {
+            return new object[]
+            {
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_tomadas",
+                        description = "Retorna quantas tomadas elétricas (Electrical Fixtures) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_interruptores",
+                        description = "Retorna quantos interruptores (Lighting Devices) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_luminarias",
+                        description = "Retorna quantas luminárias (Lighting Fixtures) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_quadros",
+                        description = "Retorna quantos quadros elétricos (Electrical Equipment) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_niveis",
+                        description = "Retorna quantos níveis (Levels) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_ambientes",
+                        description = "Retorna quantos ambientes/cômodos (Rooms) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_circuitos_eletricos",
+                        description = "Retorna quantos circuitos elétricos (ElectricalSystems) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "area_construida",
+                        description = "Calcula a área total construída somando a área de todos os ambientes (Rooms) do modelo.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "comprimento_eletrodutos",
+                        description = "Calcula o comprimento total de eletrodutos (Conduit) no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "potencia_total_instalada",
+                        description = "Calcula a potência total instalada somando a carga aparente de tomadas e quadros elétricos.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_vistas",
+                        description = "Retorna quantas vistas (Views, excluindo templates) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "contar_folhas",
+                        description = "Retorna quantas folhas/pranchas (ViewSheets) existem no modelo BIM.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "categoria_com_mais_elementos",
+                        description = "Retorna qual categoria (entre tomadas, interruptores, luminárias, quadros, níveis, ambientes e eletrodutos) possui mais elementos no modelo.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                },
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "familias_carregadas",
+                        description = "Lista todas as famílias carregadas no modelo com suas respectivas quantidades de instâncias.",
+                        parameters = new { type = "object", properties = new { } }
+                    }
+                }
+            };
+        }
+
+        private string ExecuteToolByName(string toolName)
+        {
+            switch (toolName)
+            {
+                case "contar_tomadas":
+                    return $"Foram encontradas {CountByCategory(BuiltInCategory.OST_ElectricalFixtures)} tomadas.";
+                case "contar_interruptores":
+                    return $"Foram encontrados {CountByCategory(BuiltInCategory.OST_LightingDevices)} interruptores.";
+                case "contar_luminarias":
+                    return $"Foram encontradas {CountByCategory(BuiltInCategory.OST_LightingFixtures)} luminárias.";
+                case "contar_quadros":
+                    return $"Foram encontrados {CountByCategory(BuiltInCategory.OST_ElectricalEquipment)} quadros.";
+                case "contar_niveis":
+                    return $"Foram encontrados {new FilteredElementCollector(_doc).OfClass(typeof(Level)).ToElements().Count} níveis.";
+                case "contar_ambientes":
+                    {
+                        var count = new FilteredElementCollector(_doc)
+                            .OfCategory(BuiltInCategory.OST_Rooms)
+                            .WhereElementIsNotElementType()
+                            .ToElements().Count;
+                        var msg = $"Foram encontrados {count} ambientes.";
+                        if (count == 0)
+                            msg += " Nenhum ambiente encontrado no arquivo local — se o modelo de arquitetura estiver vinculado por link, os ambientes dele ainda não são contados pelo BIMBrain.";
+                        return msg;
+                    }
+                case "contar_circuitos_eletricos":
+                    {
+                        var count = new FilteredElementCollector(_doc)
+                            .OfClass(typeof(ElectricalSystem))
+                            .ToElements().Count;
+                        var msg = $"Foram encontrados {count} circuitos elétricos.";
+                        if (count == 0)
+                            msg += " Nenhum circuito elétrico encontrado — os elementos podem ainda não estar atrelados a circuitos nos quadros.";
+                        return msg;
+                    }
+                case "area_construida":
+                    {
+                        var (sum, filled, total) = SumParameter(BuiltInCategory.OST_Rooms, BuiltInParameter.ROOM_AREA);
+                        var area = sum * 0.092903;
+                        if (filled < total)
+                            return $"Área total construída: {area:F2} m² (considerando apenas {filled} de {total} ambientes com área preenchida).";
+                        if (area == 0)
+                            return "Área total construída: 0,00 m². Nenhum ambiente encontrado no arquivo local — se o modelo de arquitetura estiver vinculado por link, os ambientes dele ainda não são contados pelo BIMBrain.";
+                        return $"Área total construída: {area:F2} m².";
+                    }
+                case "comprimento_eletrodutos":
+                    {
+                        var (sum, filled, total) = SumParameter(BuiltInCategory.OST_Conduit, BuiltInParameter.CURVE_ELEM_LENGTH);
+                        var length = sum * 0.3048;
+                        if (filled < total)
+                            return $"Comprimento total de eletrodutos: {length:F2} m (considerando apenas {filled} de {total} eletrodutos com comprimento preenchido).";
+                        return $"Comprimento total de eletrodutos: {length:F2} m.";
+                    }
+                case "potencia_total_instalada":
+                    {
+                        var (sumFixtures, filledFixtures, totalFixtures) = SumPowerParameter(BuiltInCategory.OST_ElectricalFixtures);
+                        var (sumEquip, filledEquip, totalEquip) = SumPowerParameter(BuiltInCategory.OST_ElectricalEquipment);
+                        var totalPower = sumFixtures + sumEquip;
+                        var filled = filledFixtures + filledEquip;
+                        var total = totalFixtures + totalEquip;
+                        if (totalPower == 0)
+                        {
+                            var circuitCount = new FilteredElementCollector(_doc)
+                                .OfClass(typeof(ElectricalSystem))
+                                .ToElements().Count;
+                            if (circuitCount == 0)
+                                return "Potência total instalada: 0,00 VA. Nenhum circuito elétrico encontrado — a potência é consolidada a partir dos circuitos atrelados aos elementos.";
+                            if (filled < total)
+                                return $"Potência total instalada: {totalPower:F2} VA (considerando apenas {filled} de {total} elementos com potência preenchida).";
+                            return $"Potência total instalada: {totalPower:F2} VA.";
+                        }
+                        if (filled < total)
+                            return $"Potência total instalada: {totalPower:F2} VA (considerando apenas {filled} de {total} elementos com potência preenchida).";
+                        return $"Potência total instalada: {totalPower:F2} VA.";
+                    }
+                case "contar_vistas":
+                    {
+                        var count = new FilteredElementCollector(_doc)
+                            .OfClass(typeof(View))
+                            .ToElements()
+                            .Cast<View>()
+                            .Count(v => !v.IsTemplate);
+                        return $"Foram encontradas {count} vistas.";
+                    }
+                case "contar_folhas":
+                    {
+                        var count = new FilteredElementCollector(_doc)
+                            .OfClass(typeof(ViewSheet))
+                            .ToElements().Count;
+                        return $"Foram encontradas {count} folhas.";
+                    }
+                case "categoria_com_mais_elementos":
+                    return FindCategoryWithMostElements();
+                case "familias_carregadas":
+                    return ListLoadedFamilies();
+                default:
+                    return null;
+            }
         }
 
         private async void OnTestIaClick(object sender, RoutedEventArgs e)
@@ -514,5 +805,20 @@ namespace BIMBrain.UI
     {
         public string Role { get; set; }
         public string Content { get; set; }
+
+        [JsonPropertyName("tool_calls")]
+        public List<OllamaToolCall> ToolCalls { get; set; }
+    }
+
+    internal class OllamaToolCall
+    {
+        public string Type { get; set; }
+        public OllamaFunctionCall Function { get; set; }
+    }
+
+    internal class OllamaFunctionCall
+    {
+        public string Name { get; set; }
+        public JsonElement Arguments { get; set; }
     }
 }
