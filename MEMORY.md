@@ -3,7 +3,7 @@
 Arquivo de memória mantido entre sessões. **Sempre atualizar ao finalizar uma TASK.**
 Referências detalhadas: `docs/CAPABILITIES.md` (estado atual) e `docs/ARCHITECTURE.md` (estrutura).
 
-Última atualização: 2026-07-14 (TASK-0077 concluída)
+Última atualização: 2026-07-14 (TASK-0081 + hotfixes de deploy concluídos; catálogo de tasks 0051-0081 atualizado)
 
 ---
 
@@ -19,8 +19,8 @@ MVP em plataforma de engenharia assistida por IA. Add-in em
 - **Model Engine** ✅ — ProjectGraph, ProjectGraphQuery, ProjectImpactAnalyzer, ElementExplanation(Service), ModelContext, Analyzers (ElectricalCircuit, Panel, ElementLevel, ElementIntegrity), QuestionProcessor.
 - **Rule Engine** ✅ — EngineeringRule, RuleResult, RuleSeverity, RuleRunner, RuleSet, RuleCatalog, regras de consistência + NBR 5410. UI: RuleResultsWindow, RuleInspectorWindow.
 - **Knowledge Engine** ✅ — KnowledgeDocument, KnowledgeRepository, RecommendationRepository, RuleRecommendation. UI: KnowledgeWindow.
-- **Classification Engine** 🟡 — Infraestrutura + Classify(Element) por BuiltInCategory (Status: Category Classification).
-- **AI Engine** 🟡 — Explicar Seleção implementado (100% Graph, sem IA).
+- **Classification Engine** ✅ — 3 camadas (categoria → tipo → família) via Engineering Dictionary (`aliases.json`); usado por `ElectricalCircuitAnalyzer`, `ElementLevelAnalyzer`, `ModelIntegrityAnalyzer` e `QuestionProcessor.DetectClassification`.
+- **AI Engine** 🟡 — Explicar Seleção implementado (100% Graph, sem IA); tool calling Ollama existente.
 - Automation / Coordination / Document — ❌ não implementados (botões placeholder).
 
 ## Ribbon (aba BIMBrain, 4 grupos)
@@ -90,9 +90,13 @@ MVP em plataforma de engenharia assistida por IA. Add-in em
 - HOTFIX pós-0081: ClassificationRepository.FindKnowledgeRoot/LoadAliases endurecidos — BaseDirectory pode ser null no Revit e Path.Combine lançava TypeInitializationException; agora busca a partir de Assembly.Location (Addins/2025, onde knowledge/ vive) e nunca lança.
 - HOTFIX crítico (deploy Revit): System.Text.Json v10.0.0.9 (e System.* empacotados) falham ao carregar no Revit 2025 porque o Revit já carregou versões próprias no contexto padrão → FileLoadException → TypeInitializationException em ClassificationRepository. Fixo em App.cs com AppDomain.AssemblyResolve que redireciona essos assemblies para os já carregados pelo Revit (fallback LoadFrom da pasta do addin). SEMPRE fechar o Revit antes de copiar a DLL (trava BIMBrain.dll).
 
-## Pendências / próximos passos prováveis
+## Pendências / próximos passos prováveis (espelho do ROADMAP)
 
-- Classificar Outlet/Switch/LightingFixture (Electrical Fixtures, Lighting Devices, Lighting Fixtures) — ainda Unknown.
-- Conectar Classification Engine ao Project Graph (enriquecer nós).
-- Implementar botões placeholder (Diagnóstico, IA, Integridade, Coordenação, Automação, Configurações, Sobre).
-- Exportar em RuleResultsWindow.
+- Conectar Classification Engine ao Project Graph (enriquecer nós com o tipo classificado).
+- Implementar botões placeholder ainda pendentes: Diagnóstico (já há consulta, falta botão), IA (conversacional), Integridade, Coordenação, Automação, Configurações, Sobre.
+- RuleHighlightService: implementar destaque visual real (OverrideGraphicSettings) — hoje lança NotImplementedException.
+- Regras NBR 5410 003–005 (ROADMAP: Planejado).
+- Query Handlers concretos (TASK-0081 criou só a infraestrutura) para substituir os `if` do QuestionProcessor.
+- Exportar resultados em RuleResultsWindow.
+- Demais disciplinas (Hydraulic, HVAC, Fire Protection, Architecture, Structure).
+- EPIC-0004 (AI Engine avançado) e EPIC-0006 (Production) ainda Planejados.

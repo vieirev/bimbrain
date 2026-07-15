@@ -62,3 +62,37 @@ Toda nova task deve obrigatoriamente pertencer a um EPIC.
 | TASK-0048 | Segunda regra normativa (NBR5410-002) | EPIC-0003 | Done |
 | TASK-0049 | Catálogo de RuleSets | EPIC-0003 | Done |
 | TASK-0050 | AffectedElements nas regras | EPIC-0003 | Done |
+| TASK-0051 | RuleSelectionService (selecionar elementos afetados) | EPIC-0003 | Done |
+| TASK-0052 | RuleNavigationService (zoom/navegar até elementos) | EPIC-0003 | Done |
+| TASK-0053 | RuleHighlightService (esqueleto de destaque visual) | EPIC-0003 | Done |
+| TASK-0054 | RuleActionService (orquestra ações de regra) | EPIC-0003 | Done |
+| TASK-0055 | RuleResultsWindow (substitui TaskDialog) | EPIC-0003 | Done |
+| TASK-0056 | Knowledge Viewer (KnowledgeDocument/Repository/Window) | EPIC-0003 | Done |
+| TASK-0057 | RuleInspectorWindow (inspetor de elementos afetados) | EPIC-0003 | Done |
+| TASK-0058 | Recommendation Engine (RuleRecommendation/Repository) | EPIC-0003 | Done |
+| TASK-0059 | Classification Engine — infraestrutura | EPIC-0005 | Done |
+| TASK-0060 | Classification Engine — classificação por categoria | EPIC-0005 | Done |
+| TASK-0061 | Engineering Dictionary (aliases.json) | EPIC-0005 | Done |
+| TASK-0062 | Classification Engine — classificação por alias do tipo | EPIC-0005 | Done |
+| TASK-0063 | Classification Engine — classificação por alias da família | EPIC-0005 | Done |
+| TASK-0064 | Pipeline de integração (Copilot/Graph/Query/Impact/Explanation/Selection) | EPIC-0002 | Done |
+| TASK-0065 | Ribbon por Engines (5 painéis) | EPIC-0003 | Done |
+| TASK-UX-0001 | Redesenho comercial da Ribbon (4 grupos, ícones) | EPIC-0003 | Done |
+| TASK-0066 | ExplainSelectionCommand (Explicar Seleção) | EPIC-0002 | Done |
+| TASK-0067 | RunNBR5410Command (executa RuleSet NBR 5410) | EPIC-0003 | Done |
+| TASK-0068 | RuleResultsWindow (consolidação da UI de regras) | EPIC-0003 | Done |
+| TASK-0069 | Knowledge Viewer (janela de conhecimento) | EPIC-0003 | Done |
+| TASK-0070 | RuleInspectorWindow (inspetor de elementos afetados) | EPIC-0003 | Done |
+| TASK-0071 | Recommendation Engine (recomendações por inconsistência) | EPIC-0003 | Done |
+| TASK-0072 | Classification Engine — infraestrutura (canônica) | EPIC-0005 | Done |
+| TASK-0073 | Classification Engine — Classify(Element) por BuiltInCategory | EPIC-0005 | Done |
+| TASK-0074 | Engineering Dictionary (aliases.json) — camada de consulta | EPIC-0005 | Done |
+| TASK-0075 | Classification Engine — classificação por alias do tipo | EPIC-0005 | Done |
+| TASK-0076 | Classification Engine — classificação por alias da família | EPIC-0005 | Done |
+| TASK-0077 | ElectricalCircuitAnalyzer usa Classification Engine | EPIC-0002 | Done |
+| TASK-0078 | ModelIntegrityAnalyzer consome RuleResult estruturado (sem Regex) | EPIC-0003 | Done |
+| TASK-0079 | ElementLevelAnalyzer baseado em classificação | EPIC-0005 | Done |
+| TASK-0080 | QuestionProcessor interpreta via Engineering Dictionary | EPIC-0005 | Done |
+| TASK-0081 | Infraestrutura de Query Handlers | EPIC-0006 | Done |
+| TASK-HOTFIX-001 | ClassificationRepository robusto a BaseDirectory nulo | EPIC-0005 | Done |
+| TASK-HOTFIX-002 | Carga de System.Text.Json no Revit (AssemblyResolve) | EPIC-0006 | Done |
