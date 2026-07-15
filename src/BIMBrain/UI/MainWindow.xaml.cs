@@ -13,9 +13,11 @@ namespace BIMBrain.UI
     public class MainWindow : Window
     {
         private readonly Document _doc;
+        private readonly Autodesk.Revit.UI.UIDocument _uiDoc;
         private readonly string _projectName;
         private readonly Stopwatch _stopwatch = new Stopwatch();
         private readonly QuestionProcessor _processor;
+        private readonly CopilotExecutor _copilotExecutor;
 
         private readonly TextBox _questionBox;
         private readonly ResponsePanel _responsePanel;
@@ -25,11 +27,13 @@ namespace BIMBrain.UI
         private bool _hasPlaceholder = true;
         private const string PlaceholderText = "Ex: Quantas tomadas existem? | Resumo do projeto | Contexto do projeto";
 
-        public MainWindow(string projectName, Document doc)
+        public MainWindow(string projectName, Autodesk.Revit.UI.UIDocument uiDoc, Document doc)
         {
             _doc = doc;
+            _uiDoc = uiDoc;
             _projectName = projectName;
             _processor = new QuestionProcessor(doc);
+            _copilotExecutor = BuildCopilotExecutor();
 
             Title = "BIMBrain";
             Width = 900;
@@ -248,7 +252,8 @@ namespace BIMBrain.UI
 
             try
             {
-                var answer = await _processor.ProcessQuestionAsync(question);
+                var execution = _copilotExecutor.Execute(question);
+                var answer = await _processor.ProcessQuestionAsync(execution.Context);
                 var elapsedMs = _stopwatch.ElapsedMilliseconds;
                 var origin = DetermineOrigin(answer);
 
@@ -284,6 +289,18 @@ namespace BIMBrain.UI
             {
                 _statusBar.SetModelCount(1);
             }
+        }
+
+        private CopilotExecutor BuildCopilotExecutor()
+        {
+            var graph = new ProjectGraphBuilder(_doc).Build();
+            var query = new ProjectGraphQuery(graph);
+            var impactAnalyzer = new ProjectImpactAnalyzer(graph);
+            var explainer = new ElementExplanationService(graph, query, impactAnalyzer);
+            var selectionService = new SelectionContextService(_uiDoc, graph, query, impactAnalyzer, explainer);
+            var contextBuilder = new CopilotContextBuilder(_uiDoc, graph, query, impactAnalyzer, explainer, selectionService);
+            var orchestrator = new CopilotOrchestrator(null);
+            return new CopilotExecutor(_uiDoc, contextBuilder, orchestrator);
         }
     }
 }

@@ -19,7 +19,9 @@ namespace BIMBrain.Rules.Standards.NBR5410
             var results = elementsRule.Execute(doc);
 
             var outletResults = results
-                .Where(r => !r.Success && r.Message.Contains("tomada"))
+                .Where(r => !r.Success &&
+                            r.Data.TryGetValue("Tipo", out var tipo) &&
+                            "tomadas".Equals(tipo))
                 .ToList();
 
             if (outletResults.Count == 0)

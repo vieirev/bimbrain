@@ -6,6 +6,7 @@ namespace BIMBrain
 {
     public class PanelInfo
     {
+        public ElementId Id { get; set; }
         public string Name { get; set; }
         public int CircuitCount { get; set; }
         public int TomadaCount { get; set; }
@@ -43,6 +44,7 @@ namespace BIMBrain
 
                 result.Add(new PanelInfo
                 {
+                    Id = panel.Id,
                     Name = panel.Name,
                     CircuitCount = panelCircuits.Count,
                     TomadaCount = panelCircuits.Sum(c => c.TomadaCount),

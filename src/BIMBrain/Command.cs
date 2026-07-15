@@ -17,7 +17,7 @@ namespace BIMBrain
 
             var projectName = doc.Title;
 
-            var window = new UI.MainWindow(projectName, doc);
+            var window = new UI.MainWindow(projectName, uidoc, doc);
 
             window.Show();
 

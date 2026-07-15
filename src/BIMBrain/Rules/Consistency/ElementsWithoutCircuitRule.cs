@@ -68,7 +68,12 @@ namespace BIMBrain.Rules.Consistency
                     Success = false,
                     Severity = RuleSeverity.Warning,
                     Message = $"Foram encontradas {unconnected} {label} sem circuito.",
-                    AffectedElements = unconnectedIds
+                    AffectedElements = unconnectedIds,
+                    Data = new Dictionary<string, object>
+                    {
+                        ["Tipo"] = kvp.Value.Label,
+                        ["Count"] = unconnected
+                    }
                 });
             }
 

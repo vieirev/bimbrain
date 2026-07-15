@@ -10,5 +10,6 @@ namespace BIMBrain.Rules
         public RuleSeverity Severity { get; set; }
         public string Message { get; set; }
         public List<ElementId> AffectedElements { get; set; } = new List<ElementId>();
+        public Dictionary<string, object> Data { get; set; } = new Dictionary<string, object>();
     }
 }

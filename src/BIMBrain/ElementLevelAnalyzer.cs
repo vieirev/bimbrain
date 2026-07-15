@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using BIMBrain.Classification;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,29 +8,45 @@ namespace BIMBrain
     public class ElementLevelAnalyzer
     {
         private readonly Document _doc;
+        private readonly ElementClassifier _classifier = new ElementClassifier();
 
         public ElementLevelAnalyzer(Document doc)
         {
             _doc = doc;
         }
 
-        public Dictionary<string, int> Analyze(BuiltInCategory category)
+        public Dictionary<string, int> Analyze(ElementClassificationType type)
         {
-            var elements = new FilteredElementCollector(_doc)
-                .OfCategory(category)
-                .WhereElementIsNotElementType()
-                .ToElements();
+            var candidateCategories = new[]
+            {
+                BuiltInCategory.OST_ElectricalFixtures,
+                BuiltInCategory.OST_LightingFixtures,
+                BuiltInCategory.OST_LightingDevices,
+                BuiltInCategory.OST_ElectricalEquipment
+            };
 
             var result = new Dictionary<string, int>();
 
-            foreach (var element in elements)
+            foreach (var category in candidateCategories)
             {
-                var levelName = GetLevelName(element);
-                if (levelName == null)
-                    continue;
+                var elements = new FilteredElementCollector(_doc)
+                    .OfCategory(category)
+                    .WhereElementIsNotElementType()
+                    .ToElements();
 
-                result.TryGetValue(levelName, out var count);
-                result[levelName] = count + 1;
+                foreach (var element in elements)
+                {
+                    var classification = _classifier.Classify(element);
+                    if (classification.Classification != type)
+                        continue;
+
+                    var levelName = GetLevelName(element);
+                    if (levelName == null)
+                        continue;
+
+                    result.TryGetValue(levelName, out var count);
+                    result[levelName] = count + 1;
+                }
             }
 
             return result;

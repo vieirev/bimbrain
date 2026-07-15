@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using BIMBrain.Classification;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -7,6 +8,7 @@ namespace BIMBrain
 {
     public class CircuitInfo
     {
+        public ElementId Id { get; set; }
         public string Name { get; set; }
         public string PanelName { get; set; }
         public int ElementCount { get; set; }
@@ -18,6 +20,7 @@ namespace BIMBrain
     public class ElectricalCircuitAnalyzer
     {
         private readonly Document _doc;
+        private readonly ElementClassifier _classifier = new ElementClassifier();
 
         public ElectricalCircuitAnalyzer(Document doc)
         {
@@ -43,17 +46,23 @@ namespace BIMBrain
                     var element = _doc.GetElement(id);
                     if (element == null) continue;
 
-                    var cat = element.Category?.BuiltInCategory;
-                    if (cat == BuiltInCategory.OST_ElectricalFixtures)
-                        tomadaCount++;
-                    else if (cat == BuiltInCategory.OST_LightingFixtures)
-                        luminariaCount++;
-                    else if (cat == BuiltInCategory.OST_LightingDevices)
-                        interruptorCount++;
+                    switch (_classifier.Classify(element).Classification)
+                    {
+                        case ElementClassificationType.Outlet:
+                            tomadaCount++;
+                            break;
+                        case ElementClassificationType.Switch:
+                            interruptorCount++;
+                            break;
+                        case ElementClassificationType.LightingFixture:
+                            luminariaCount++;
+                            break;
+                    }
                 }
 
                 result.Add(new CircuitInfo
                 {
+                    Id = circuit.Id,
                     Name = circuit.Name,
                     PanelName = circuit.BaseEquipment?.Name ?? "",
                     ElementCount = tomadaCount + luminariaCount + interruptorCount,

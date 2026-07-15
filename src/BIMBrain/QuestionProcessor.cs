@@ -1,5 +1,7 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using BIMBrain.Classification;
+using BIMBrain.Knowledge;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -25,10 +27,15 @@ namespace BIMBrain
             _doc = doc;
         }
 
+        public async Task<string> ProcessQuestionAsync(CopilotContext context)
+        {
+            var question = context?.Question ?? "";
+            return await ProcessQuestionAsync(question);
+        }
+
         public async Task<string> ProcessQuestionAsync(string question)
         {
             var normalized = Normalize(question);
-
             if (normalized.StartsWith("quantas tomadas existem"))
                 return $"Foram encontradas {CountByCategory(BuiltInCategory.OST_ElectricalFixtures)} tomadas.";
 
@@ -165,13 +172,13 @@ namespace BIMBrain
 
             if (normalized.Contains("por nivel") || normalized.StartsWith("distribuicao"))
             {
-                var catInfo = DetectDistributionCategory(normalized);
+                var catInfo = DetectClassification(normalized);
                 if (catInfo != null)
                 {
-                    var (builtInCat, displayName) = catInfo.Value;
+                    var (type, alias) = catInfo.Value;
                     var analyzer = new ElementLevelAnalyzer(_doc);
-                    var distribution = analyzer.Analyze(builtInCat);
-                    return FormatDistribution(distribution, displayName);
+                    var distribution = analyzer.Analyze(type);
+                    return FormatDistribution(distribution, alias);
                 }
             }
 
@@ -671,16 +678,22 @@ namespace BIMBrain
             return sb.ToString().TrimEnd();
         }
 
-        private static (BuiltInCategory category, string displayName)? DetectDistributionCategory(string normalized)
+        private static readonly ClassificationRepository _classificationRepository = new ClassificationRepository();
+
+        private static (ElementClassificationType type, string matchedAlias)? DetectClassification(string question)
         {
-            if (normalized.Contains("tomadas"))
-                return (BuiltInCategory.OST_ElectricalFixtures, "TOMADAS");
-            if (normalized.Contains("luminarias"))
-                return (BuiltInCategory.OST_LightingFixtures, "LUMINÁRIAS");
-            if (normalized.Contains("interruptores"))
-                return (BuiltInCategory.OST_LightingDevices, "INTERRUPTORES");
-            if (normalized.Contains("quadros"))
-                return (BuiltInCategory.OST_ElectricalEquipment, "QUADROS");
+            foreach (var kvp in _classificationRepository.GetAllAliases())
+            {
+                if (!Enum.TryParse<ElementClassificationType>(kvp.Key, out var type))
+                    continue;
+
+                foreach (var alias in kvp.Value)
+                {
+                    if (question.IndexOf(alias, StringComparison.OrdinalIgnoreCase) >= 0)
+                        return (type, alias);
+                }
+            }
+
             return null;
         }
 

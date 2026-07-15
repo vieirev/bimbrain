@@ -61,6 +61,7 @@ namespace BIMBrain
         public int LevelCount { get; }
         public int ElementCount { get; }
         public string FilePath { get; }
+        public Document Document { get; }
 
         public DocumentInfo(string name, string type, bool isMain, Document doc)
         {
@@ -69,6 +70,7 @@ namespace BIMBrain
             IsLoaded = doc != null;
             IsMainDocument = isMain;
             FilePath = doc?.PathName ?? "";
+            Document = doc;
 
             if (doc != null)
             {

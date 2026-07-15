@@ -1,0 +1,39 @@
+{
+  "Outlet": [
+    "tomada",
+    "tug",
+    "socket",
+    "outlet",
+    "power outlet",
+    "tomada dupla",
+    "tomada simples",
+    "tomada usb"
+  ],
+  "Switch": [
+    "interruptor",
+    "switch",
+    "three way",
+    "paralelo",
+    "intermediário"
+  ],
+  "LightingFixture": [
+    "luminária",
+    "luminaria",
+    "light fixture",
+    "lighting fixture",
+    "led panel",
+    "spot"
+  ],
+  "Panel": [
+    "painel",
+    "quadro",
+    "qd",
+    "qdl",
+    "qdc",
+    "distribution board"
+  ],
+  "Circuit": [
+    "circuito",
+    "circuit"
+  ]
+}

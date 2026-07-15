@@ -3,7 +3,6 @@ using BIMBrain.Rules;
 using BIMBrain.Rules.Consistency;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace BIMBrain
 {
@@ -35,14 +34,17 @@ namespace BIMBrain
             foreach (var r in results)
             {
                 if (r.Success) continue;
-                var match = Regex.Match(r.Message, @"\d+");
-                if (!match.Success) continue;
-                var count = int.Parse(match.Value);
-                if (r.Message.Contains("tomada"))
+                if (!r.Data.TryGetValue("Tipo", out var tipoObj)) continue;
+                if (!r.Data.TryGetValue("Count", out var countObj)) continue;
+
+                var tipo = tipoObj as string;
+                var count = countObj is int ci ? ci : System.Convert.ToInt32(countObj);
+
+                if (tipo == "tomadas")
                     tomadas = count;
-                else if (r.Message.Contains("luminária"))
+                else if (tipo == "luminárias")
                     luminarias = count;
-                else if (r.Message.Contains("interruptor"))
+                else if (tipo == "interruptores")
                     interruptores = count;
             }
 
